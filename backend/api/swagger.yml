@@ -1,0 +1,491 @@
+swagger: "2.0"
+info:
+  description: Online Store Service API
+  title: online store service
+  version: 1.0.0
+produces:
+  - application/json
+consumes:
+  - application/json
+schemes:
+  - http
+securityDefinitions:
+  key:
+    type: apiKey
+    name: x-online-store-key
+    in: header
+    
+security:
+  - key: []
+
+paths:
+  /v1/login:
+    post:
+      security: []  
+      summary: login to service
+      description: login endpoint
+      tags:
+        - "login"
+      parameters:
+        - in: body
+          name: data
+          required: true
+          description: login request data
+          schema:
+            $ref: "#/definitions/LoginRequest"
+      responses:
+        "200":
+          description: login success
+          schema:
+            $ref: "#/definitions/LoginResponse"
+        "401":
+          description: unauthorized
+          schema:
+            $ref: "#/responses/Unauthorized"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/BaseResponse"
+  
+  /v1/user:
+    post:
+      tags:
+        - user
+      security: []
+      summary: create user
+      description: create new user
+      parameters:
+        - in: body
+          name: data
+          required: true
+          schema:
+            $ref: "#/definitions/CreateUserRequest"
+      responses:
+        "201":
+          description: success create new user
+          schema:
+            $ref: "#/definitions/User"
+        "401":
+          description: unauthorized
+          schema:
+            $ref: "#/responses/Unauthorized"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/BaseResponse"
+    
+  /v1/user/{id}:
+    get:
+      tags:
+        - user
+      summary: get user by id
+      description: get user detail
+      parameters:
+        - $ref: "#/parameters/ModelID"
+      responses:
+        "200":
+          description: success get user detail
+          schema:
+            type: object
+            properties: 
+              data:
+                $ref: "#/definitions/User"
+        "401":
+          description: unauthorized
+          schema:
+            $ref: "#/responses/Unauthorized"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/BaseResponse"
+  
+  /v1/products:
+    post:
+      summary: create new product
+      description: create new product API
+      tags:
+        - product
+      parameters:
+        - in: body
+          name: data
+          description: product request body
+          required: true
+          schema:
+            $ref: "#/definitions/ProductData"   
+      responses:
+        "201":
+          description: success create new product
+          schema:
+            $ref: "#/definitions/BaseResponse"
+        "401":
+          description: unauthorized
+          schema:
+            $ref: "#/responses/Unauthorized"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/BaseResponse"
+    get:
+      summary: products list data
+      description: get product list data API
+      tags:
+        - product
+      parameters:
+        - $ref: "#/parameters/Keyword"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/Limit"
+      responses:
+        "200":
+          description: success get product list data
+          schema:
+            type: object
+            properties: 
+              data:
+                type: array
+                items:
+                  $ref: "#/definitions/Product"
+              metadata:
+                $ref: "#/definitions/pagination"
+        "401":
+          description: unauthorized
+          schema:
+            $ref: "#/responses/Unauthorized"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/BaseResponse"
+  
+  /v1/carts:
+    post:
+      summary: create new cart
+      description: create new cart API
+      tags:
+        - cart
+      parameters:
+        - in: body
+          name: data
+          description: product request body
+          required: true
+          schema:
+            type: array
+            items: 
+              $ref: "#/definitions/CartRequest"
+      responses:
+        "201":
+          description: success create new cart
+          schema:
+            $ref: "#/definitions/BaseResponse"
+        "401":
+          description: unauthorized
+          schema:
+            $ref: "#/responses/Unauthorized"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/BaseResponse"
+    get:
+      summary: carts list data
+      description: get carts list data API
+      tags:
+        - cart
+      parameters:
+        - $ref: "#/parameters/Keyword"
+        - $ref: "#/parameters/Page"
+        - $ref: "#/parameters/Limit"
+      responses:
+        "200":
+          description: success get carts list data
+          schema:
+            type: object
+            properties: 
+              data:
+                type: array
+                items:
+                  $ref: "#/definitions/Cart"
+              metadata:
+                $ref: "#/definitions/pagination"
+        "401":
+          description: unauthorized
+          schema:
+            $ref: "#/responses/Unauthorized"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/BaseResponse"
+  
+  /v1/histories:
+    post:
+      summary: create new history
+      description: create new history API
+      tags:
+        - history
+      parameters:
+        - in: body
+          name: data
+          description: product request body
+          required: true
+          schema:
+            $ref: "#/definitions/HistoryRequest"
+      responses:
+        "201":
+          description: success create new cart
+          schema:
+            $ref: "#/definitions/BaseResponse"
+        "401":
+          description: unauthorized
+          schema:
+            $ref: "#/responses/Unauthorized"
+        default:
+          description: error
+          schema:
+            $ref: "#/definitions/BaseResponse"
+definitions:
+  ## COMMON DEFINITIONS ##
+  BaseResponse:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: int32
+      message:
+        type: string
+  
+  pagination:
+    type: object
+    properties:
+      page:
+        type: integer
+      totalPage:
+        type: integer
+      totalData:
+        type: integer
+
+  principal:
+    type: object
+    properties:
+      name:
+        type: string
+      role:
+          type: string
+      userID:
+        type: integer
+        format: int64
+  
+  ModelID:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: uint
+        x-go-custom-tag: gorm:"type:int auto_increment;primaryKey"
+  ModelLogTime:
+    type: object
+    properties:
+      createdAt:
+        type: integer
+        format: date-time
+        x-go-custom-tag: gorm:"type:int;autoCreateTime"
+      updatedAt:
+        type: integer
+        format: date-time
+        x-go-custom-tag: gorm:"type:int;autoUpdateTime"
+      deletedAt:
+        type: "string"
+        format: "date-time"
+        x-go-type:
+          type: DeletedAt
+        x-go-custom-tag: gorm:"type:datetime"
+    
+  DeletedAt:
+    type: object
+    x-go-type:
+      type: DeletedAt
+      import:
+        package: gorm.io/gorm
+      embedded: true
+  
+  ## REQUEST DEFINITIONS ##
+  LoginRequest:
+    type: object
+    required: [username, password]
+    properties: 
+      username:
+        type: string
+      password:
+        type: string
+  
+  CreateUserRequest:
+    $ref: "#/definitions/UserData"
+  
+  CartRequest:
+    type: object
+    required: [productID, quantity]
+    properties: 
+      productID:
+        type: integer
+        format: uint
+      quantity:
+        type: integer
+        format: int64
+  
+  HistoryRequest:
+    type: object
+    required: [metadata]
+    properties: 
+      metadata:
+        type: string
+
+  ## RESPONSE DEFINITIONS ##
+  LoginResponse:
+    type: object
+    properties: 
+      username:
+        type: string
+      role:
+        type: string
+      token:
+        type: string
+  
+  ## MODEL DEFINITIONS ##
+  User:
+    allOf:
+      - $ref: "#/definitions/ModelID"
+      - $ref: "#/definitions/ModelLogTime"
+      - $ref: "#/definitions/UserData"
+  UserData:
+    type: object
+    properties: 
+      username:
+        type: string
+        x-go-custom-tag: gorm:"type:varchar(225) not null unique"
+      password:
+        type: string
+        x-go-custom-tag: gorm:"type:varchar(225) not null"
+      role:
+        type: string
+        x-go-custom-tag: gorm:"type:varchar(225) not null"
+  
+  Product:
+    allOf:
+      - $ref: "#/definitions/ModelID"
+      - $ref: "#/definitions/ModelLogTime"
+      - $ref: "#/definitions/ProductData"
+  ProductData:
+    type: object
+    required: [name, price]
+    properties:
+      name:
+        type: string
+        x-go-custom-tag: gorm:"type:varchar(255); not null"
+      price:
+        type: number
+        format: float64
+        x-go-custom-tag: gorm:"type:float; not null"
+  
+  Cart:
+    allOf:
+      - $ref: "#/definitions/ModelID"
+      - $ref: "#/definitions/ModelLogTime"
+      - $ref: "#/definitions/CartData"
+      - type: object
+        properties: 
+          UserID:
+            type: number
+            format: uint
+            x-go-custom-tag: gorm:"type:integer; not null"
+          User:
+            $ref: "#/definitions/User"
+          ProductID:
+            type: number
+            format: uint
+            x-go-custom-tag: gorm:"type:integer; not null"
+          Product:
+            $ref: "#/definitions/Product"
+  CartData:
+    type: object
+    properties: 
+      Quantity:
+        type: number
+        format: int64
+  
+  History:
+    allOf:
+      - $ref: "#/definitions/ModelID"
+      - $ref: "#/definitions/ModelLogTime"
+      - $ref: "#/definitions/HistoryData"
+      - type: object
+        properties: 
+          userID:
+            type: integer
+            format: int64
+            x-go-custom-tag: gorm:"type:integer"
+          user:
+            $ref: "#/definitions/User"
+  HistoryData:
+    type: object
+    properties: 
+      MetaData:
+        type: string
+      
+
+parameters:
+  ModelID:
+    name: id
+    in: path
+    type: number
+    format: int64
+    required: true
+  Keyword:
+    in: query
+    name: keyword
+    type: string
+    description: "search keyword"
+  Page:
+    in: query
+    name: page
+    type: integer
+    format: int32
+    description: "the number of page"
+  Limit:
+    in: query
+    name: limit
+    type: integer
+    format: int32
+    description: The numbers of items to return.
+    
+  
+responses:
+  ## success response
+  Success:
+    description: the request to the server was successful
+    schema:
+      $ref: "#/definitions/BaseResponse"
+  Created:
+    description: the request to the server was successful
+    schema:
+      $ref: "#/definitions/BaseResponse"
+  ## error response
+  BadRequest:
+    description: something wrong when send request to server
+    schema:
+      $ref: "#/definitions/BaseResponse"
+  Unauthorized:
+    description: the client must be authenticated to perform this request
+    schema:
+      $ref: "#/definitions/BaseResponse"
+  ForbiddenAccess:
+    description: the client don`t have access to the resource
+    schema:
+      $ref: "#/definitions/BaseResponse"
+  NotFound:
+    description: the request resource is not found
+    schema:
+      $ref: "#/definitions/BaseResponse"
+  UnprocessableEntity:
+    description: The request is correct but server can`t process the request
+    schema:
+      $ref: "#/definitions/BaseResponse"
+  InternalServerError:
+    description: Internal Server Error
+    schema:
+      $ref: "#/definitions/BaseResponse"
